@@ -111,6 +111,7 @@ namespace BattleArena
         /// </summary>
         void DisplayMainMenu()
         {
+
         }
 
         /// <summary>
@@ -119,7 +120,8 @@ namespace BattleArena
         /// </summary>
         void GetPlayerName()
         {
-
+            Console.WriteLine("Welcome! Please enter your name.\n> ");
+            player.name = Console.ReadLine();
         }
 
         /// <summary>
@@ -128,6 +130,7 @@ namespace BattleArena
         /// </summary>
         public void CharacterSelection()
         {
+            GetInput("Nice to meet you " + player.name + ". Please select a character.", "Wizard", "Knight");
         }
 
         /// <summary>
@@ -136,6 +139,10 @@ namespace BattleArena
         /// <param name="character">The character that will have its stats shown</param>
         void DisplayStats(Character character)
         {
+            Console.WriteLine("Name: " + character.name);
+            Console.WriteLine("Health: " + character.health);
+            Console.WriteLine("Attack Power: " + character.attackPower);
+            Console.WriteLine("Defense Power: " + character.defensePower);
         }
 
         /// <summary>
@@ -144,9 +151,9 @@ namespace BattleArena
         /// <param name="attackPower">The attacking character's attack power</param>
         /// <param name="defensePower">The defending character's defense power</param>
         /// <returns>The amount of damage done to the defender</returns>
-        float CalculateDamage(float attackPower, float defensePower)
-        {
-        }
+        //float CalculateDamage(float attackPower, float defensePower)
+        //{
+        //}
 
         /// <summary>
         /// Deals damage to a character based on an attacker's attack power
@@ -154,9 +161,9 @@ namespace BattleArena
         /// <param name="attacker">The character that initiated the attack</param>
         /// <param name="defender">The character that is being attacked</param>
         /// <returns>The amount of damage done to the defender</returns>
-        public float Attack(ref Character attacker, ref Character defender)
-        {
-        }
+        //public float Attack(ref Character attacker, ref Character defender)
+       // {
+        //}
 
         /// <summary>
         /// Simulates one turn in the current monster fight
