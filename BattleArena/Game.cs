@@ -26,10 +26,6 @@ namespace BattleArena
         private int currentEnemyIndex = 0;
         private Character currentEnemy;
 
-        Character slime;
-        Character zomb;
-        Character kris;
-
         /// <summary>
         /// Function that starts the main game loop
         /// </summary>
@@ -51,20 +47,11 @@ namespace BattleArena
         /// </summary>
         public void Start()
         {
-            slime.name = "Slime";
-            slime.health = 10;
-            slime.attackPower = 1;
-            slime.defensePower = 0;
+            Character slime = new Character { name = "Slime", health = 10, attackPower = 1, defensePower = 0 }; 
 
-            zomb.name = "Zom-B";
-            zomb.health = 15;
-            zomb.attackPower = 5;
-            zomb.defensePower = 2;
+            Character zomb = new Character { name = "Zom-B", health = 15, attackPower = 5, defensePower = 2 }; 
 
-            kris.name = "guy named Kris";
-            kris.health = 25;
-            kris.attackPower = 10;
-            kris.defensePower = 5;
+            Character kris = new Character { name = "guy named Kris", health = 25, attackPower = 15, defensePower = 5 };
 
             enemies = new Character[] { slime, zomb, kris };
 
@@ -112,6 +99,11 @@ namespace BattleArena
                 case 2:
                     DisplayRestartMenu();
                     break;
+                case 3:
+                    Console.WriteLine("You have slain all the enemies.");
+                    Console.ReadKey(true);
+                    DisplayRestartMenu();
+                    break;
 
                 default:
                     Console.WriteLine("Invalid scene index");
@@ -123,7 +115,7 @@ namespace BattleArena
         {
             if (currentEnemyIndex >= enemies.Length)
             {
-                currentScene = 2;
+                currentScene = 3;
             }
             if (currentEnemy.health <= 0)
             {
@@ -137,6 +129,12 @@ namespace BattleArena
                 }
 
                 currentEnemy = enemies[currentEnemyIndex];
+            }
+            if (player.health <= 0)
+            {
+                Console.WriteLine("You have died.");
+                Console.ReadKey(true);
+                currentScene = 2;
             }
         }
         /// <summary>
@@ -260,7 +258,7 @@ namespace BattleArena
 
             if (choice == 1)
             {
-                player.health = 30;
+                player.health = 50;
                 player.attackPower = 25;
                 player.defensePower = 0;
             }
@@ -313,6 +311,12 @@ namespace BattleArena
         {
             float damageTaken = CalculateDamage(attacker.attackPower, defender.defensePower);
             defender.health -= damageTaken;
+
+            if (defender.health < 0)
+            {
+                defender.health = 0;
+            }
+
             return damageTaken;
         }
 
@@ -351,18 +355,10 @@ namespace BattleArena
 
             if (simulationOver)
             {
-                currentScene = 2;
+                currentScene = 3;
             }
 
             return simulationOver;
-        }
-
-        /// <summary>
-        /// Checks to see if either the player or the enemy has won the current battle.
-        /// Updates the game based on who won the battle..
-        /// </summary>
-        void CheckBattleResults()
-        {
         }
 
     }
