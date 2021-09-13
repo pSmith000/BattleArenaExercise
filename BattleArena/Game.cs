@@ -227,8 +227,25 @@ namespace BattleArena
         /// </summary>
         void GetPlayerName()
         {
-            Console.Write("Welcome! Please enter your name.\n> ");
-            player.name = Console.ReadLine();
+            bool validInputRecieved = true;
+            while (validInputRecieved == true)
+            {
+                Console.Write("Welcome! Please enter your name.\n> ");
+                player.name = Console.ReadLine();
+                Console.Clear();
+
+                int choice = GetInput("You've entered " + player.name + ", are you sure you want to keep this name?", 
+                    "Yes", "No");
+                if (choice == 1)
+                {
+                    validInputRecieved = false;
+                }
+                else
+                {
+                    validInputRecieved = true;
+                }
+            }
+            
         }
 
         /// <summary>
@@ -241,9 +258,9 @@ namespace BattleArena
 
             if (choice == 1)
             {
-                player.health = 50;
+                player.health = 30;
                 player.attackPower = 25;
-                player.defensePower = 5;
+                player.defensePower = 0;
             }
             else if (choice == 2)
             {
