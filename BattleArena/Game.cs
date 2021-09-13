@@ -24,11 +24,24 @@ namespace BattleArena
         private int currentEnemyIndex = 0;
         private Character currentEnemy;
 
+        Character slime;
+        Character zomb;
+        Character kris;
+
         /// <summary>
         /// Function that starts the main game loop
         /// </summary>
         public void Run()
         {
+            Start();
+
+            while (!gameOver)
+            {
+                Update();
+            }
+
+            End();
+            
         }
 
         /// <summary>
@@ -36,6 +49,24 @@ namespace BattleArena
         /// </summary>
         public void Start()
         {
+            slime.name = "Slime";
+            slime.health = 10;
+            slime.attackPower = 1;
+            slime.defensePower = 0;
+
+            zomb.name = "Zom-B";
+            zomb.health = 15;
+            zomb.attackPower = 5;
+            zomb.defensePower = 2;
+
+            kris.name = "guy named Kris";
+            kris.health = 25;
+            kris.attackPower = 10;
+            kris.defensePower = 5;
+
+            enemies = new Character[] { slime, zomb, kris };
+
+            ResetCurrentEnemy();
         }
 
         /// <summary>
@@ -43,6 +74,8 @@ namespace BattleArena
         /// </summary>
         public void Update()
         {
+            UpdateCurrentScene();
+            Console.Clear();
         }
 
         /// <summary>
@@ -50,8 +83,59 @@ namespace BattleArena
         /// </summary>
         public void End()
         {
+            Console.WriteLine("Farewell Adventurer!");
         }
 
+        void ResetCurrentEnemy()
+        {
+            currentEnemyIndex = 0;
+
+            currentEnemy = enemies[currentEnemyIndex];
+        }
+
+        void UpdateCurrentScene()
+        {
+            switch (currentScene)
+            {
+                case 0:
+                    DisplayMainMenu();
+                    break;
+
+                case 1:
+                    DisplayCurrentScene();
+                    UpdateCurrentEnemy();
+                    break;
+
+                case 2:
+                    DisplayRestartMenu();
+                    break;
+
+                default:
+                    Console.WriteLine("Invalid scene index");
+                    break;
+            }
+        }
+
+        void UpdateCurrentEnemy()
+        {
+            if (currentEnemyIndex >= enemies.Length)
+            {
+                currentScene = 2;
+            }
+            if (currentEnemy.health <= 0)
+            {
+                Console.WriteLine("You have slayed the " + currentEnemy.name + "!");
+                Console.ReadKey(true);
+                currentEnemyIndex++;
+
+                if (TryEndSimulation())
+                {
+                    return;
+                }
+
+                currentEnemy = enemies[currentEnemyIndex];
+            }
+        }
         /// <summary>
         /// Gets an input from the player based on some given decision
         /// </summary>
@@ -104,6 +188,9 @@ namespace BattleArena
         /// </summary>
         void DisplayCurrentScene()
         {
+            DisplayStats(player);
+            DisplayStats(currentEnemy);
+            Battle();
         }
 
         /// <summary>
@@ -111,7 +198,26 @@ namespace BattleArena
         /// </summary>
         void DisplayMainMenu()
         {
+            GetPlayerName();
+            CharacterSelection();
+            currentScene = 1;
+            Console.Clear();
 
+        }
+
+        void DisplayRestartMenu()
+        {
+            int choice = GetInput("Play Again?", "Yes", "No");
+
+            if (choice == 1)
+            {
+                ResetCurrentEnemy();
+                currentScene = 0;
+            }
+            else if (choice == 2)
+            {
+                gameOver = true;
+            }
         }
 
         /// <summary>
@@ -120,7 +226,7 @@ namespace BattleArena
         /// </summary>
         void GetPlayerName()
         {
-            Console.WriteLine("Welcome! Please enter your name.\n> ");
+            Console.Write("Welcome! Please enter your name.\n> ");
             player.name = Console.ReadLine();
         }
 
@@ -130,7 +236,20 @@ namespace BattleArena
         /// </summary>
         public void CharacterSelection()
         {
-            GetInput("Nice to meet you " + player.name + ". Please select a character.", "Wizard", "Knight");
+            int choice = GetInput("Nice to meet you " + player.name + ". Please select a character.", "Wizard", "Knight");
+
+            if (choice == 1)
+            {
+                player.health = 50;
+                player.attackPower = 25;
+                player.defensePower = 5;
+            }
+            else if (choice == 2)
+            {
+                player.health = 75;
+                player.attackPower = 15;
+                player.defensePower = 10;
+            }
         }
 
         /// <summary>
@@ -143,6 +262,7 @@ namespace BattleArena
             Console.WriteLine("Health: " + character.health);
             Console.WriteLine("Attack Power: " + character.attackPower);
             Console.WriteLine("Defense Power: " + character.defensePower);
+            Console.WriteLine("");
         }
 
         /// <summary>
@@ -151,9 +271,17 @@ namespace BattleArena
         /// <param name="attackPower">The attacking character's attack power</param>
         /// <param name="defensePower">The defending character's defense power</param>
         /// <returns>The amount of damage done to the defender</returns>
-        //float CalculateDamage(float attackPower, float defensePower)
-        //{
-        //}
+        float CalculateDamage(float attackPower, float defensePower)
+        {
+            float damage = attackPower - defensePower;
+
+            if (damage <= 0)
+            {
+                damage = 0;
+            }
+
+            return damage;
+        }
 
         /// <summary>
         /// Deals damage to a character based on an attacker's attack power
@@ -161,15 +289,52 @@ namespace BattleArena
         /// <param name="attacker">The character that initiated the attack</param>
         /// <param name="defender">The character that is being attacked</param>
         /// <returns>The amount of damage done to the defender</returns>
-        //public float Attack(ref Character attacker, ref Character defender)
-       // {
-        //}
+        public float Attack(ref Character attacker, ref Character defender)
+        {
+            float damageTaken = CalculateDamage(attacker.attackPower, defender.defensePower);
+            defender.health -= damageTaken;
+            return damageTaken;
+        }
 
         /// <summary>
         /// Simulates one turn in the current monster fight
         /// </summary>
         public void Battle()
         {
+            int choice = GetInput("A " + currentEnemy.name + " stands in front of you! What will you do?",
+                "Attack", "Dodge");
+
+            if (choice == 1)
+            {
+                float damageTaken = Attack(ref player, ref currentEnemy);
+                Console.WriteLine("You dealt " + damageTaken + " damage!");
+
+                damageTaken = Attack(ref currentEnemy, ref player);
+                Console.WriteLine("The " + currentEnemy.name + " has dealt " + damageTaken);
+
+                Console.ReadKey(true);
+                Console.Clear();
+            }
+            else
+            {
+                Console.WriteLine("You dodged the enemies attack!");
+
+                Console.ReadKey(true);
+                Console.Clear();
+            }
+            
+        }
+
+        bool TryEndSimulation()
+        {
+            bool simulationOver = currentEnemyIndex >= enemies.Length;
+
+            if (simulationOver)
+            {
+                currentScene = 2;
+            }
+
+            return simulationOver;
         }
 
         /// <summary>
