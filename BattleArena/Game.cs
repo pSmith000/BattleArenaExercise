@@ -84,6 +84,7 @@ namespace BattleArena
         public void End()
         {
             Console.WriteLine("Farewell Adventurer!");
+            Console.ReadKey(true);
         }
 
         void ResetCurrentEnemy()
