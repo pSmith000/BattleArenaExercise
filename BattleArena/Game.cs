@@ -4,15 +4,24 @@ using System.Text;
 
 namespace BattleArena
 {
+
+    public struct Item
+    {
+        public string Name;
+        public float StatBoost;
+    }
+
     class Game
     {
         private bool _gameOver;
         private int _currentScene;
-        private Entity _player;
+        private Player _player;
         private Entity[] _enemies;
         private int _currentEnemyIndex = 0;
         private Entity _currentEnemy;
         private string _playerName;
+        private Item[] _wizardItems;
+        private Item[] _knightItems;
 
         /// <summary>
         /// Function that starts the main game loop
@@ -36,6 +45,23 @@ namespace BattleArena
         public void Start()
         {
             ResetCurrentEnemy();
+            InitializeItems();
+        }
+
+        
+        public void InitializeItems()
+        {
+            //Wizard Items
+            Item bigWand = new Item { Name = "Big Wand", StatBoost = 5 };
+            Item bigShield = new Item { Name = "Big Shield", StatBoost = 15 };
+
+            //Knight Items
+            Item wand = new Item { Name = "Wand", StatBoost = 1025 };
+            Item shoes = new Item { Name = "Yeezies", StatBoost = 9000.05f };
+
+            //Initialize arrays
+            _wizardItems = new Item[] { bigWand, bigShield };
+            _knightItems = new Item[] { wand, shoes };
         }
 
         /// <summary>
@@ -132,44 +158,18 @@ namespace BattleArena
         /// <param name="option1">The first option the player can choose</param>
         /// <param name="option2">The second option the player can choose</param>
         /// <returns></returns>
-        int GetInput(string description, string option1, string option2)
+        int GetInput(string description, params string[] options)
         {
             string input = "";
-            int inputReceived = 0;
+            int inputRecieved = -1;
 
-            while (inputReceived != 1 && inputReceived != 2)
-            {//Print options
+            while (inputRecieved == -1)
+            {
+                //Print options
                 Console.WriteLine(description);
-                Console.WriteLine("1. " + option1);
-                Console.WriteLine("2. " + option2);
-                Console.Write("> ");
 
-                //Get input from player
-                input = Console.ReadLine();
 
-                //If player selected the first option...
-                if (input == "1" || input == option1)
-                {
-                    //Set input received to be the first option
-                    inputReceived = 1;
-                }
-                //Otherwise if the player selected the second option...
-                else if (input == "2" || input == option2)
-                {
-                    //Set input received to be the second option
-                    inputReceived = 2;
-                }
-                //If neither are true...
-                else
-                {
-                    //...display error message
-                    Console.WriteLine("Invalid Input");
-                    Console.ReadKey();
-                }
-
-                Console.Clear();
             }
-            return inputReceived;
         }
 
         /// <summary>
@@ -246,11 +246,11 @@ namespace BattleArena
 
             if (choice == 1)
             {
-                _player = new Entity(_playerName, 50, 25, 0);
+                _player = new Player(_playerName, 50, 25, 0, _wizardItems);
             }
             else if (choice == 2)
             {
-                _player = new Entity(_playerName, 75, 15, 10);
+                _player = new Player(_playerName, 75, 15, 10, _knightItems);
             }
         }
 
@@ -273,7 +273,7 @@ namespace BattleArena
         public void Battle()
         {
             int choice = GetInput("A " + _currentEnemy.Name + " stands in front of you! What will you do?",
-                "Attack", "Dodge");
+                "Attack", "Equip Item");
 
             if (choice == 1)
             {
