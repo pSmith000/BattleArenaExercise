@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
+using System.IO;
 
 namespace BattleArena
 {
@@ -16,7 +17,7 @@ namespace BattleArena
     {
         public string Name;
         public float StatBoost;
-        public int ItemType;
+        public ItemType Type;
     }
 
     class Game
@@ -60,12 +61,12 @@ namespace BattleArena
         public void InitializeItems()
         {
             //Wizard Items
-            Item bigWand = new Item { Name = "Big Wand", StatBoost = 5, ItemType = 1};
-            Item bigShield = new Item { Name = "Big Shield", StatBoost = 15, ItemType = 0 };
+            Item bigWand = new Item { Name = "Big Wand", StatBoost = 5, Type = ItemType.ATTACK};
+            Item bigShield = new Item { Name = "Big Shield", StatBoost = 15, Type = ItemType.DEFENSE };
 
             //Knight Items
-            Item wand = new Item { Name = "Wand", StatBoost = 1025, ItemType = 1 };
-            Item shoes = new Item { Name = "Yeezies", StatBoost = 9000.05f, ItemType = 0};
+            Item wand = new Item { Name = "Wand", StatBoost = 1025, Type = ItemType.ATTACK };
+            Item shoes = new Item { Name = "Yeezies", StatBoost = 9000.05f, Type = ItemType.DEFENSE };
 
             //Initialize arrays
             _wizardItems = new Item[] { bigWand, bigShield };
@@ -88,6 +89,22 @@ namespace BattleArena
         {
             Console.WriteLine("Farewell Adventurer!");
             Console.ReadKey(true);
+        }
+
+        public void Save()
+        {
+            //Create a new stream writer
+            StreamWriter writer = new StreamWriter("SaveData.txt");
+
+            //Save current enemy index
+            writer.WriteLine(_currentEnemyIndex);
+
+            //Save player and enemy stats
+            _player.Save(writer);
+            _currentEnemy.Save(writer);
+
+            //Close the writer when done saving
+            writer.Close();
         }
 
         void ResetCurrentEnemy()
@@ -330,7 +347,7 @@ namespace BattleArena
         public void Battle()
         {
             int choice = GetInput("A " + _currentEnemy.Name + " stands in front of you! What will you do?",
-                "Attack", "Equip Item", "Remove current item");
+                "Attack", "Equip Item", "Remove current item", "Save");
 
             if (choice == 0)
             {
@@ -348,7 +365,26 @@ namespace BattleArena
                 DisplayEquipItemMenu();
                 Console.ReadKey(true);
                 Console.Clear();
-                return;
+            }
+            else if (choice == 2)
+            {
+                if (!_player.TryRemoveCurrentItem())
+                {
+                    Console.WriteLine("You don't have anything equipped.");
+                }
+                else
+                {
+                    Console.WriteLine("You placed the item in your bag");
+                }
+                Console.ReadKey(true);
+                Console.Clear();
+            }
+            else if (choice == 3)
+            {
+                Save();
+                Console.WriteLine("Saved Game");
+                Console.ReadKey(true);
+                Console.Clear();
             }
             
         }
