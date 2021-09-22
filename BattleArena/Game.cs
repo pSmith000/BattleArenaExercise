@@ -13,6 +13,15 @@ namespace BattleArena
         NONE
     }
 
+    public enum Scene
+    {
+        STARTMENU,
+        MAINMENU,
+        BATTLE,
+        RESTARTMENU,
+        KILLALLENEMIES
+    }
+
     public struct Item
     {
         public string Name;
@@ -23,7 +32,7 @@ namespace BattleArena
     class Game
     {
         private bool _gameOver;
-        private int _currentScene;
+        private Scene _currentScene;
         private Player _player;
         private Entity[] _enemies;
         private int _currentEnemyIndex = 0;
@@ -107,6 +116,67 @@ namespace BattleArena
             writer.Close();
         }
 
+        public bool Load()
+        {
+            bool loadSuccessful = true;
+
+            //If the file doesn't exist...
+            if (!File.Exists("SaveData.txt"))
+            {
+                //...return false
+                loadSuccessful = false;
+            }
+
+            //Create a new reader to read from the text file
+            StreamReader reader = new StreamReader("SaveData.txt");
+
+            //If the first line can't be converted into an integer...
+            if (!int.TryParse(reader.ReadLine(), out _currentEnemyIndex))
+            {
+                //...return false
+                loadSuccessful = false;
+            }
+
+            //Load player job
+            string job = reader.ReadLine();
+
+            //Assign items based on player job
+            if(job == "Wizard")
+            {
+                _player = new Player(_wizardItems);
+            }
+            else if (job == "Knight")
+            {
+                _player = new Player(_knightItems);
+            }
+            else
+            {
+                loadSuccessful = false;
+            }
+
+            _player.Job = job;
+
+            if (!_player.Load(reader))
+            {
+                loadSuccessful = false;
+            }
+
+            //Create a new instance and try to reaload the enemy
+            _currentEnemy = new Entity();
+            if (!_currentEnemy.Load(reader))
+            {
+                loadSuccessful = false;
+            }
+
+            //Update the array to match the current enemy stats
+            _enemies[_currentEnemyIndex] = _currentEnemy;
+
+            //Close the reader
+            reader.Close();
+
+            return loadSuccessful;
+        }
+
         void ResetCurrentEnemy()
         {
             _currentEnemyIndex = 0;
@@ -126,19 +196,23 @@ namespace BattleArena
         {
             switch (_currentScene)
             {
-                case 0:
+                case Scene.STARTMENU:
+                    DisplayStartMenu();
+                    break;
+
+                case Scene.MAINMENU:
                     DisplayMainMenu();
                     break;
 
-                case 1:
+                case Scene.BATTLE:
                     DisplayCurrentScene();
                     UpdateCurrentEnemy();
                     break;
 
-                case 2:
+                case Scene.RESTARTMENU:
                     DisplayRestartMenu();
                     break;
-                case 3:
+                case Scene.KILLALLENEMIES:
                     Console.WriteLine("You have slain all the enemies.");
                     Console.ReadKey(true);
                     DisplayRestartMenu();
@@ -154,7 +228,7 @@ namespace BattleArena
         {
             if (_currentEnemyIndex >= _enemies.Length)
             {
-                _currentScene = 3;
+                _currentScene = Scene.KILLALLENEMIES;
             }
             if (_currentEnemy.Health <= 0)
             {
@@ -173,7 +247,7 @@ namespace BattleArena
             {
                 Console.WriteLine("You have died.");
                 Console.ReadKey(true);
-                _currentScene = 2;
+                _currentScene = Scene.RESTARTMENU;
             }
         }
         /// <summary>
@@ -248,7 +322,7 @@ namespace BattleArena
         {
             GetPlayerName();
             CharacterSelection();
-            _currentScene = 1;
+            _currentScene = Scene.BATTLE;
             Console.Clear();
 
         }
@@ -260,11 +334,37 @@ namespace BattleArena
             if (choice == 0)
             {
                 ResetCurrentEnemy();
-                _currentScene = 0;
+                _currentScene = Scene.STARTMENU;
             }
             else if (choice == 1)
             {
                 _gameOver = true;
+            }
+        }
+
+        public void DisplayStartMenu()
+        {
+            int choice = GetInput("Welcome to Fight Club!", "Start New Game", "Load Game");
+
+            if (choice == 0)
+            {
+                _currentScene = Scene.MAINMENU;
+            }
+            else if (choice == 1)
+            {
+                if (Load())
+                {
+                    Console.WriteLine("Load Successful!");
+                    Console.ReadKey(true);
+                    Console.Clear();
+                    _currentScene = Scene.BATTLE;
+                }
+                else
+                {
+                    Console.WriteLine("Load Failed.");
+                    Console.ReadKey(true);
+                    Console.Clear();
+                }
             }
         }
 
@@ -305,11 +405,11 @@ namespace BattleArena
 
             if (choice == 0)
             {
-                _player = new Player(_playerName, 50, 25, 0, _wizardItems);
+                _player = new Player(_playerName, 50, 25, 0, _wizardItems, "Wizard");
             }
             else if (choice == 1)
             {
-                _player = new Player(_playerName, 75, 15, 10, _knightItems);
+                _player = new Player(_playerName, 75, 15, 10, _knightItems, "Knight");
             }
         }
 
@@ -395,7 +495,7 @@ namespace BattleArena
 
             if (simulationOver)
             {
-                _currentScene = 3;
+                _currentScene = Scene.KILLALLENEMIES;
             }
 
             return simulationOver;
